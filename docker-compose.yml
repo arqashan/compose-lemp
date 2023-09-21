@@ -1,0 +1,37 @@
+version: '3'
+services:
+    php:
+        build:
+            context: ./docker
+            dockerfile: php.Dockerfile
+        container_name: '${APP_NAME}-php'
+        restart: always
+        volumes:
+            - './app:/var/www/html'
+        depends_on:
+            - mysql
+
+    nginx:
+        image: nginx:1.23.4
+        container_name: '${APP_NAME}-nginx'
+        restart: always
+        ports:
+            - '80:80'
+            - '443:443'
+        links:
+            - 'php'
+        volumes:
+            - './app:/var/www/html'
+            - './config/nginx:/etc/nginx/conf.d'
+
+    mysql:
+        image: mysql:5.7.43
+        container_name: '${APP_NAME}-mysql'
+        restart: 'on-failure'
+        environment:
+            - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+            - MYSQL_DATABASE=${DB_NAME}
+            - MYSQL_USER=${DB_USER}
+            - MYSQL_PASSWORD=${DB_PASSWORD}
+        volumes:
+            - ${PWD}
